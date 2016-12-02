@@ -104,8 +104,8 @@ Aggregation and Sorting
 
 Like SQL, PGQL has support for:
 
- * `GROUP BY` to avoid duplicate rows in results
- * `MIN`, `MAX`, and `AVG` aggregations
+ * `GROUP BY` to create groups of solutions
+ * `MIN`, `MAX`, `SUM` and `AVG` aggregations
  * `ORDER BY` to sort results
 
  and many other familiar SQL constructs.
