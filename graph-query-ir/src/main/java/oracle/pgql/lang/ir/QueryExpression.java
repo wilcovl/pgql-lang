@@ -73,7 +73,8 @@ public interface QueryExpression {
     OUTDEGREE, // vertex
     EDGE_LABEL,
     CAST,
-    ALL_DIFFERENT
+    ALL_DIFFERENT,
+    GET_LONGITUDE
   }
 
   ExpressionType getExpType();
@@ -1181,6 +1182,34 @@ public interface QueryExpression {
       public String toString() {
         String expressions = exps.stream().map(QueryExpression::toString).collect(Collectors.joining(", "));
         return "ALL_DIFFERENT(" + expressions + ")";
+      }
+
+      @Override
+      public void accept(QueryExpressionVisitor v) {
+        v.visit(this);
+      }
+    }
+
+    class GetLongitude implements Function {
+
+      private final QueryExpression exp;
+
+      public GetLongitude(QueryExpression exps) {
+        this.exp = exps;
+      }
+
+      public QueryExpression getExp() {
+        return exp;
+      }
+
+      @Override
+      public ExpressionType getExpType() {
+        return ExpressionType.GET_LONGITUDE;
+      }
+
+      @Override
+      public String toString() {
+        return "GET_LONGITUDE(" + exp + ")";
       }
 
       @Override
