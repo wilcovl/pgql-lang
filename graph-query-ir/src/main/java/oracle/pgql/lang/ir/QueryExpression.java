@@ -74,7 +74,9 @@ public interface QueryExpression {
     EDGE_LABEL,
     CAST,
     ALL_DIFFERENT,
+    GET_LATITUDE,
     GET_LONGITUDE
+
   }
 
   ExpressionType getExpType();
@@ -1182,6 +1184,35 @@ public interface QueryExpression {
       public String toString() {
         String expressions = exps.stream().map(QueryExpression::toString).collect(Collectors.joining(", "));
         return "ALL_DIFFERENT(" + expressions + ")";
+      }
+
+      @Override
+      public void accept(QueryExpressionVisitor v) {
+        v.visit(this);
+      }
+    }
+
+
+    class GetLatitude implements Function {
+
+      private final QueryExpression exp;
+
+      public GetLatitude(QueryExpression exps) {
+        this.exp = exps;
+      }
+
+      public QueryExpression getExp() {
+        return exp;
+      }
+
+      @Override
+      public ExpressionType getExpType() {
+        return ExpressionType.GET_LATITUDE;
+      }
+
+      @Override
+      public String toString() {
+        return "GET_LATITUDE(" + exp + ")";
       }
 
       @Override

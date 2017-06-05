@@ -95,6 +95,7 @@ public class SpoofaxAstToGraphQuery {
   private static final int POS_CAST_EXP = 0;
   private static final int POS_CAST_TARGET_TYPE_NAME = 1;
   private static final int POS_ALL_DIFFERENT_EXPS = 0;
+  private static final int POS_GET_LATITUDE_EXP = 0;
   private static final int POS_GET_LONGITUDE_EXP = 0;
 
   public static GraphQuery translate(IStrategoTerm ast) throws PgqlException {
@@ -527,6 +528,9 @@ public class SpoofaxAstToGraphQuery {
           exps.add(translateExp(expT, inScopeVars, inScopeInAggregationVars));
         }
         return new QueryExpression.Function.AllDifferent(exps);
+      case "GetLatitude":
+        exp = translateExp(t.getSubterm(POS_GET_LATITUDE_EXP), inScopeVars, inScopeInAggregationVars);
+        return new QueryExpression.Function.GetLatitude(exp);
       case "GetLongitude":
         exp = translateExp(t.getSubterm(POS_GET_LONGITUDE_EXP), inScopeVars, inScopeInAggregationVars);
         return new QueryExpression.Function.GetLongitude(exp);
