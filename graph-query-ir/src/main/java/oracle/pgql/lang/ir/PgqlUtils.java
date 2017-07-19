@@ -11,6 +11,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import oracle.pgql.lang.util.AbstractQueryExpressionVisitor;
 import oracle.pgql.lang.ir.QueryExpression.Aggregation;
@@ -28,8 +29,7 @@ import static org.apache.commons.lang3.StringEscapeUtils.escapeJava;
 public class PgqlUtils {
 
   /**
-   * @param exp
-   *          a query expression
+   * @param exp a query expression
    * @return the set of variables used in the query expression
    */
   public static Set<QueryVariable> getVariables(QueryExpression exp) {
@@ -84,27 +84,28 @@ public class PgqlUtils {
   public static String printPgqlString(String stringLiteral) {
     return "'" + escapeJava(stringLiteral) + "'";
   }
-  
+
   public static String printPgqlString(GraphQuery graphQuery) {
     GraphPattern graphPattern = graphQuery.getGraphPattern();
-    String result = printPathPatterns(graphPattern) + graphQuery.getProjection() + "\n" + graphPattern;
+    StringBuilder result = new StringBuilder(
+        printPathPatterns(graphPattern) + graphQuery.getProjection() + "\n" + graphPattern);
     GroupBy groupBy = graphQuery.getGroupBy();
     if (groupBy.getElements().isEmpty() == false) {
-      result += "\n" + groupBy;
+      result.append("\n" + groupBy);
     }
     OrderBy orderBy = graphQuery.getOrderBy();
     if (orderBy.getElements().isEmpty() == false) {
-      result += "\n" + orderBy;
+      result.append("\n" + orderBy);
     }
     QueryExpression limit = graphQuery.getLimit();
     if (limit != null) {
-      result += "\nLIMIT " + limit;
+      result.append("\nLIMIT " + limit);
     }
     QueryExpression offset = graphQuery.getOffset();
     if (offset != null) {
-      result += "\nOFFSET " + offset;
+      result.append("\nOFFSET " + offset);
     }
-    return result;
+    return result.toString();
   }
 
   public static String printPgqlString(Projection projection) {
@@ -403,30 +404,48 @@ public class PgqlUtils {
   }
 
   public static String printPgqlString(GroupBy groupBy) {
-    String result = "GROUP BY ";
-    Iterator<ExpAsVar> it = groupBy.getElements().iterator();
-    while (it.hasNext()) {
-      result += it.next();
-      if (it.hasNext()) {
-        result += ", ";
-      }
+    List<ExpAsVar> groupByElems = groupBy.getElements();
+    return printPgqlGroupByString(groupByElems);
+  }
+
+  public static String printPgqlGroupByString(List<ExpAsVar> groupByElems) {
+    StringBuilder result = new StringBuilder();
+    if (groupByElems.size() > 0) {
+      result.append("GROUP BY ");
+      result.append(groupByElems.stream() //
+          .map(Object::toString) //
+          .collect(Collectors.joining(", ")));
     }
-    return result;
+    return result.toString();
   }
 
   public static String printPgqlString(OrderBy orderBy) {
-    String result = "ORDER BY ";
-    Iterator<OrderByElem> it = orderBy.getElements().iterator();
-    while (it.hasNext()) {
-      result += it.next();
-      if (it.hasNext()) {
-        result += ", ";
-      }
+    List<OrderByElem> orderByElems = orderBy.getElements();
+    return printPgqlOrderByString(orderByElems);
+  }
+
+  public static String printPgqlOrderByString(List<OrderByElem> orderByElems) {
+    StringBuilder result = new StringBuilder();
+    if (orderByElems.size() > 0) {
+      result.append("ORDER BY ");
+      result.append(orderByElems.stream() //
+          .map(Object::toString) //
+          .collect(Collectors.joining(", ")));
     }
-    return result;
+    return result.toString();
   }
 
   public static String printPgqlString(OrderByElem orderByElem) {
     return (orderByElem.isAscending() ? "ASC" : "DESC") + "(" + orderByElem.getExp() + ")";
+  }
+
+  public static String printPgqlPathString(QueryPath queryPath) {
+    StringBuilder result = new StringBuilder();
+
+    result.append(" -/");
+    result.append(queryPath.getName());
+    result.append(printHopDistance(queryPath));
+    result.append("/-");
+    return result.toString();
   }
 }
